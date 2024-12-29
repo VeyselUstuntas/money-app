@@ -18,14 +18,17 @@
       v-model="leftDrawerOpen"
       show-if-above
       bordered
+      :width="200"
+      :breakpoint="767"
       class="bg-primary text-white"
+
       >
       <q-list>
         <q-item-label header class="text-white">
-          Essential Links
+          Navigation
         </q-item-label>
 
-        <EssentialLink v-for="link in linksList" :key="link.title" v-bind="link" />
+        <NavLink v-for="link in navLinks" :key="link.title" v-bind="link" />
       </q-list>
     </q-drawer>
 
@@ -37,51 +40,19 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import EssentialLink, { type EssentialLinkProps } from 'components/EssentialLink.vue';
+import NavLink, { NavLinkProps } from 'src/components/Nav/NavLink.vue';
 
-const linksList: EssentialLinkProps[] = [
+const navLinks: NavLinkProps[] = [
   {
-    title: 'Docs',
-    caption: 'quasar.dev',
-    icon: 'school',
-    link: 'https://quasar.dev'
+    title: 'Entries',
+    link: '/',
+    icon: 'savings',
   },
   {
-    title: 'Github',
-    caption: 'github.com/quasarframework',
-    icon: 'code',
-    link: 'https://github.com/quasarframework'
+    title: 'Settings',
+    link: '/settings',
+    icon: 'settings',
   },
-  {
-    title: 'Discord Chat Channel',
-    caption: 'chat.quasar.dev',
-    icon: 'chat',
-    link: 'https://chat.quasar.dev'
-  },
-  {
-    title: 'Forum',
-    caption: 'forum.quasar.dev',
-    icon: 'record_voice_over',
-    link: 'https://forum.quasar.dev'
-  },
-  {
-    title: 'Twitter',
-    caption: '@quasarframework',
-    icon: 'rss_feed',
-    link: 'https://twitter.quasar.dev'
-  },
-  {
-    title: 'Facebook',
-    caption: '@QuasarFramework',
-    icon: 'public',
-    link: 'https://facebook.quasar.dev'
-  },
-  {
-    title: 'Quasar Awesome',
-    caption: 'Community Quasar projects',
-    icon: 'favorite',
-    link: 'https://awesome.quasar.dev'
-  }
 ];
 
 const leftDrawerOpen = ref(false);
