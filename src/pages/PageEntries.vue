@@ -30,9 +30,16 @@
         </div>
       </div>
 
-      <div class="row q-px-sm q-pb-sm q-col-gutter-sm bg-primary">
+      <q-form
+      @submit="addEntry"
+      class="row q-px-sm q-pb-sm q-col-gutter-sm bg-primary">
         <div class="col-5">
-          <q-input placeholder="Name" bg-color="white" dense outlined />
+          <q-input
+            placeholder="Name"
+            bg-color="white"
+            dense
+            outlined
+            v-model="addEntryForm.name" />
         </div>
         <div class="col-5">
           <q-input
@@ -43,12 +50,18 @@
             step="0.01"
             dense
             outlined
+            v-model.number="addEntryForm.amount"
           />
         </div>
         <div class="col-2">
-          <q-btn color="positive" icon="add" round />
+          <q-btn
+            color="positive"
+            icon="add"
+            round
+            type="submit"
+            />
         </div>
-      </div>
+      </q-form>
     </q-footer>
   </q-page>
 </template>
@@ -56,9 +69,17 @@
 <script setup lang="ts">
 import { useAmountColorClass } from "src/use/useAmountColorClass";
 import { useCurrencify } from "src/use/useCurrencify";
-import { computed, ref } from "vue";
+import { computed, reactive, ref } from "vue";
+import {uid} from "quasar"
 
-const entries = ref([
+interface IEntry{
+  id:string,
+  name:string,
+  amount:number
+}
+
+
+const entries = ref<IEntry[]>([
   {
     id: "id1",
     name: "Salary",
@@ -86,4 +107,20 @@ const balance = computed(() => {
     return acc + amount
   },0);
 });
+
+const addEntryForm = reactive({
+  name:"",
+  amount:null
+})
+
+const addEntry = () => {
+  const newEntry:IEntry = {
+    id: uid(),
+    name:addEntryForm.name,
+    amount:(Number)(addEntryForm.amount)
+  }
+  entries.value.push(newEntry);
+}
+
+
 </script>
