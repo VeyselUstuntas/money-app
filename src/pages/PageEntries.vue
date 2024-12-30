@@ -21,15 +21,20 @@
 
     <q-footer class="bg-transparent">
       <div class="row q-mb-sm q-px-md q-py-sm shadow-up-3">
-        <div class="col text-grey-7 text-h6">Balance: </div>
-        <div class="col text-grey-7 text-h6 text-right">+ $ 3.999,90</div>
+        <div class="col text-grey-7 text-h6">Balance:</div>
+        <div
+          class="col text-h6 text-right"
+          :class="useAmountColorClass(balance)"
+        >
+          {{ useCurrencify(balance) }}
+        </div>
       </div>
 
       <div class="row q-px-sm q-pb-sm q-col-gutter-sm bg-primary">
-        <div class="col-auto">
+        <div class="col-5">
           <q-input placeholder="Name" bg-color="white" dense outlined />
         </div>
-        <div class="col-auto ">
+        <div class="col-5">
           <q-input
             placeholder="Amount"
             bg-color="white"
@@ -40,7 +45,7 @@
             outlined
           />
         </div>
-        <div class="col-auto">
+        <div class="col-2">
           <q-btn color="positive" icon="add" round />
         </div>
       </div>
@@ -51,7 +56,7 @@
 <script setup lang="ts">
 import { useAmountColorClass } from "src/use/useAmountColorClass";
 import { useCurrencify } from "src/use/useCurrencify";
-import { ref } from "vue";
+import { computed, ref } from "vue";
 
 const entries = ref([
   {
@@ -75,4 +80,10 @@ const entries = ref([
     amount: 0,
   },
 ]);
+
+const balance = computed(() => {
+  return entries.value.reduce((acc, {amount}) => {
+    return acc + amount
+  },0);
+});
 </script>
