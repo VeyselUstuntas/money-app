@@ -2,20 +2,33 @@
   <q-page>
     <div class="q-pa-md">
       <q-list separator bordered>
-        <q-item v-for="entry in entries" :key="entry.id">
-          <q-item-section
-            :class="useAmountColorClass(entry.amount!)"
-            class="text-weight-bold"
-            >{{ entry.name }}</q-item-section
-          >
+        <q-slide-item
+          @right="onEntrySlideRight"
+          v-for="entry in entries"
+          :key="entry.id"
+          right-color="negative"
+        >
+          <!-- <template v-slot:left>
+            <q-icon name="done" />
+          </template> -->
+          <template v-slot:right>
+            <q-icon name="delete" />
+          </template>
+          <q-item>
+            <q-item-section
+              :class="useAmountColorClass(entry.amount!)"
+              class="text-weight-bold"
+              >{{ entry.name }}</q-item-section
+            >
 
-          <q-item-section
-            :class="useAmountColorClass(entry.amount!)"
-            class="text-weight-bold"
-            side
-            >{{ useCurrencify(entry.amount!) }}
-          </q-item-section>
-        </q-item>
+            <q-item-section
+              :class="useAmountColorClass(entry.amount!)"
+              class="text-weight-bold"
+              side
+              >{{ useCurrencify(entry.amount!) }}
+            </q-item-section>
+          </q-item>
+        </q-slide-item>
       </q-list>
     </div>
 
@@ -62,13 +75,15 @@
 import { useAmountColorClass } from "src/use/useAmountColorClass";
 import { useCurrencify } from "src/use/useCurrencify";
 import { computed, reactive, ref } from "vue";
-import { uid } from "quasar";
+import {  uid, useQuasar } from "quasar";
 
 interface IEntry {
   id: string;
   name: string;
   amount: number | null;
 }
+
+const $q = useQuasar();
 
 const entries = ref<IEntry[]>([
   {
@@ -119,5 +134,33 @@ const addEntry = () => {
   const newEntry = Object.assign({}, { id: uid() }, addEntryForm);
   entries.value.push(newEntry);
   addEntryFormReset();
+};
+
+
+
+const onEntrySlideRight = ({reset}:any) => {
+  $q.dialog({
+    title: "Delete Entry",
+    message: "Delete this entry?",
+    persistent: false,
+    ok:{
+      label:"Delete",
+      color:"negative",
+      noCaps:true
+    },
+    cancel:{
+      color:"positive",
+      noCaps:true
+    }
+
+  })
+    .onOk(() => {
+      console.log('>>>> OK')
+    })
+    .onCancel(() => {
+      console.log('>>>> Cancel')
+      reset();
+    })
+
 };
 </script>
