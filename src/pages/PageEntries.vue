@@ -5,16 +5,46 @@
         <q-item v-for="entry in entries" :key="entry.id">
           <q-item-section
             :class="useAmountColorClass(entry.amount)"
-          >{{entry.name}}</q-item-section>
+            class="text-weight-bold"
+            >{{ entry.name }}</q-item-section
+          >
 
           <q-item-section
             :class="useAmountColorClass(entry.amount)"
+            class="text-weight-bold"
             side
-          >{{ useCurrencify(entry.amount) }}
+            >{{ useCurrencify(entry.amount) }}
           </q-item-section>
         </q-item>
       </q-list>
     </div>
+
+    <q-footer class="bg-transparent">
+      <div class="row q-mb-sm q-px-md q-py-sm shadow-up-3">
+        <div class="col text-grey-7 text-h6">Balance: </div>
+        <div class="col text-grey-7 text-h6 text-right">+ $ 3.999,90</div>
+      </div>
+
+      <div class="row q-px-sm q-pb-sm q-col-gutter-sm bg-primary">
+        <div class="col-auto">
+          <q-input placeholder="Name" bg-color="white" dense outlined />
+        </div>
+        <div class="col-auto ">
+          <q-input
+            placeholder="Amount"
+            bg-color="white"
+            input-class="text-right"
+            type="number"
+            step="0.01"
+            dense
+            outlined
+          />
+        </div>
+        <div class="col-auto">
+          <q-btn color="positive" icon="add" round />
+        </div>
+      </div>
+    </q-footer>
   </q-page>
 </template>
 
