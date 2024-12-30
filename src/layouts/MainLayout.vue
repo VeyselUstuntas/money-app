@@ -1,8 +1,18 @@
 <template>
   <q-layout view="hHh lpr lFf">
-    <q-header elevated>
+    <q-header
+      elevated
+      bordered
+      >
       <q-toolbar>
-        <q-btn flat dense round icon="menu" aria-label="Menu" @click="toggleLeftDrawer" />
+        <q-btn
+          flat
+          round
+          icon="menu"
+          aria-label="Menu"
+          @click="toggleLeftDrawer"
+
+          />
 
         <div class="absolute-center">
           <q-toolbar-title>
@@ -24,7 +34,9 @@
 
       >
       <q-list>
-        <q-item-label header class="text-white">
+        <q-item-label
+          header
+          class="text-white">
           Navigation
         </q-item-label>
 
