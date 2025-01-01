@@ -31,7 +31,6 @@
       :width="200"
       :breakpoint="767"
       class="bg-primary text-white"
-
       >
       <q-list>
         <q-item-label

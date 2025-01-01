@@ -1,9 +1,9 @@
 <template>
   <q-page>
     <div class="q-pa-md">
-      <q-list separator bordered>
+      <q-list separator bordered v-if="storeEntries.entryLoaded">
         <q-slide-item
-          v-for="entry in entries"
+          v-for="entry in storeEntries.entries"
           @right="onEntrySlideRight($event, entry)"
           :key="entry.id"
           right-color="negative"
@@ -30,13 +30,18 @@
           </q-item>
         </q-slide-item>
       </q-list>
+
+      <div v-else class="text-center"><q-spinner color="primary" size="3em" /></div>
     </div>
 
-    <q-footer class="bg-transparent">
+    <q-footer class="bg-white">
       <div class="row q-mb-sm q-px-md q-py-sm shadow-up-3">
         <div class="col text-grey-7 text-h6">Balance:</div>
-        <div class="col text-h6 text-right" :class="useAmountColorClass(balance)">
-          {{ useCurrencify(balance) }}
+        <div
+          class="col text-h6 text-right"
+          :class="useAmountColorClass(storeEntries.balance)"
+        >
+          {{ useCurrencify(storeEntries.balance) }}
         </div>
       </div>
 
@@ -74,10 +79,13 @@
 <script setup lang="ts">
 import { useAmountColorClass } from "src/use/useAmountColorClass";
 import { useCurrencify } from "src/use/useCurrencify";
-import { computed, reactive, ref } from "vue";
+import { computed, onMounted, reactive, ref } from "vue";
 import { uid, useQuasar } from "quasar";
+import { useStoreEntries } from "src/stores/storeEntries";
+import { Entry } from "src/types/Entry";
+import { AddEntry } from "src/types/AddEntry";
 
-interface IEntry {
+export interface IEntry {
   id: string;
   name: string;
   amount: number | null;
@@ -85,44 +93,20 @@ interface IEntry {
 
 const $q = useQuasar();
 
-const entries = ref<IEntry[]>([
-  {
-    id: "id1",
-    name: "Salary",
-    amount: 4999.99,
-  },
-  {
-    id: "id2",
-    name: "Rent",
-    amount: -999,
-  },
-  {
-    id: "id3",
-    name: "Phone",
-    amount: -14.99,
-  },
-  {
-    id: "id4",
-    name: "Unknow",
-    amount: 0,
-  },
-]);
+const entries = ref<Entry[]>([]);
 
 const nameRef = ref<HTMLInputElement | null>(null);
 
-const balance = computed(() => {
-  return entries.value.reduce((acc, { amount }) => {
-    return acc + amount!;
-  }, 0);
-});
+const storeEntries = useStoreEntries();
 
-const addEntryFormDefault = {
-  name: "",
+const addEntryFormDefault : AddEntry = {
+  name:"",
   amount: null,
+  paid: false,
 };
 
-const addEntryForm = reactive({
-  ...addEntryFormDefault,
+const addEntryForm = reactive <AddEntry>({
+  ...addEntryFormDefault
 });
 
 const addEntryFormReset = () => {
@@ -130,9 +114,12 @@ const addEntryFormReset = () => {
   nameRef.value!.focus();
 };
 
-const addEntry = () => {
-  const newEntry = Object.assign({}, { id: uid() }, addEntryForm);
-  entries.value.push(newEntry);
+const loadEntries = async () => {
+  await storeEntries.loadEntries();
+};
+
+const addEntry = async () => {
+  await storeEntries.addEntry(addEntryForm);
   addEntryFormReset();
 };
 
@@ -141,12 +128,14 @@ const onEntrySlideRight = ({ reset }: any, entry: IEntry) => {
     title: "Delete Entry",
     message: `
       Delete this entry?
-      <div class="text-weight-bold text-center q-mt-md ${useAmountColorClass(entry?.amount)}">
-        ${entry?.name} : ${useCurrencify((Number)(entry?.amount))}
+      <div class="text-weight-bold text-center q-mt-md ${useAmountColorClass(
+        entry?.amount
+      )}">
+        ${entry?.name} : ${useCurrencify(Number(entry?.amount))}
       </div>
     `,
     persistent: false,
-    html:true,
+    html: true,
     ok: {
       label: "Delete",
       color: "negative",
@@ -158,21 +147,15 @@ const onEntrySlideRight = ({ reset }: any, entry: IEntry) => {
     },
   })
     .onOk(() => {
-      deleteEntry(entry.id);
+      storeEntries.deleteEntry(entry.id);
     })
     .onCancel(() => {
       reset();
     });
 
-  const deleteEntry = (entryId: string) => {
-    const index = entries.value.findIndex((entry) => entry.id === entryId);
-    entries.value.splice(index,1);
-    $q.notify({
-      message:"Entry Deleted",
-      position:"top",
-      color:"negative"
-
-    })
-  };
 };
+
+onMounted(async () => {
+  await loadEntries();
+});
 </script>
