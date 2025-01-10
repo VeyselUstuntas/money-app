@@ -11,7 +11,7 @@
           <!-- <template v-slot:left>
             <q-icon name="done" />
           </template> -->
-          <template v-slot:right>
+          <template v-slot:right  v-if="userRole === 'ADMIN'" >
             <q-icon name="delete" />
           </template>
           <q-item>
@@ -34,7 +34,7 @@
       <div v-else class="text-center"><q-spinner color="primary" size="3em" /></div>
     </div>
 
-    <q-footer class="bg-white">
+    <q-footer v-if="userRole === 'ADMIN'" class="bg-white">
       <div class="row q-mb-sm q-px-md q-py-sm shadow-up-3">
         <div class="col text-grey-7 text-h6">Balance:</div>
         <div
@@ -84,6 +84,7 @@ import { uid, useQuasar } from "quasar";
 import { useStoreEntries } from "src/stores/storeEntries";
 import { Entry } from "src/types/Entry";
 import { AddEntry } from "src/types/AddEntry";
+import { useAuthStore } from 'src/stores/authStore';
 
 export interface IEntry {
   id: string;
@@ -92,10 +93,12 @@ export interface IEntry {
 }
 
 const $q = useQuasar();
+const authStore = useAuthStore();
 
 const entries = ref<Entry[]>([]);
 
 const nameRef = ref<HTMLInputElement | null>(null);
+const userRole = authStore.loadRole();
 
 const storeEntries = useStoreEntries();
 
