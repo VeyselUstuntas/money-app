@@ -24,6 +24,7 @@
 </template>
 
 <script setup lang="ts">
+import { debounce } from 'quasar';
 import { Customer } from 'src/models/customer/customer.customer.model';
 import { useUserStore } from 'src/stores/userStore';
 import { onMounted, ref, watch } from 'vue';
@@ -34,37 +35,31 @@ const tempCustomerList = ref<Customer[]>([]);
 
 const search = ref<string>('');
 const loading = ref<boolean>(false);
-const debounceTimeout = ref<any>(null);
-const loadingTimeout = ref<any>(null);
-let filteredCustomers: any[] = [];
+let filteredCustomers = ref<any>(null);
+
+
+const updateCustomerList = debounce((value) => {
+  loading.value = true;
+
+  filteredCustomers.value = tempCustomerList.value.filter((customer) =>
+    customer.email.toLowerCase().startsWith(value.toLowerCase())
+  );
+}, 900);
+
+const loadingDebounce = debounce(() => {
+  loading.value = false;
+  customerList.value = filteredCustomers.value;
+},3000);
+
 
 watch(
   () => search.value,
-  async (value) => {
-    [...customerList.value] = filteredCustomers;
-
-    if (debounceTimeout.value) {
-      clearTimeout(debounceTimeout.value);
-      clearTimeout(loadingTimeout.value);
-    }
-
-    debounceTimeout.value = setTimeout(() => {
-      loading.value = true;
-      filteredCustomers = [];
-      filteredCustomers.push(
-        ...tempCustomerList.value.filter((customer) => {
-          return customer.email.toLowerCase().startsWith(value.toLowerCase());
-        })
-      );
-    }, 900);
-
-    loadingTimeout.value = setTimeout(() => {
-      loading.value = false;
-
-      customerList.value = filteredCustomers;
-    }, 3000);
+  (value) => {
+    updateCustomerList(value);
+    loadingDebounce();
   }
 );
+
 
 onMounted(async () => {
   loadCustomerList();

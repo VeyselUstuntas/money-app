@@ -2,7 +2,7 @@
   <div class="flex justify-center items-center q-pa-md" style="height: 100vh">
     <q-card class="my-card" style="width: 50%">
       <q-card-section>
-        <q-form @submit="generateCustomer" class="q-gutter-md" ref="formRef">
+        <q-form ref="formRef" @submit="generateCustomer" class="q-gutter-md">
           <div>
             <q-input
               class="q-ma-md"
@@ -10,11 +10,8 @@
               v-model="firstname"
               label="Firstname"
               type="text"
-              :rules="[
-                (val) => !!val || 'Firstname is required',
-                (val) => val.length >= 2 || 'Must be at least 2 characters',
-              ]"
-              lazy-rules
+              :rules="[() => !Boolean(errors.error?.format().firstname?._errors.length)]"
+              :error-message="errors.error?.format().firstname?._errors[0]"
             />
             <q-input
               class="q-ma-md"
@@ -22,11 +19,8 @@
               v-model="lastname"
               label="Lastname"
               type="text"
-              :rules="[
-                (val) => !!val || 'Lastname is required',
-                (val) => val.length >= 2 || 'Must be at least 2 characters',
-              ]"
-              lazy-rules
+              :rules="[() => !Boolean(errors.error?.format().lastname?._errors.length)]"
+              :error-message="errors.error?.format().lastname?._errors[0]"
             />
             <q-input
               class="q-ma-md"
@@ -34,18 +28,14 @@
               v-model="email"
               label="Email"
               type="email"
-              :rules="[
-                (val) => !!val || 'Email is required',
-                (val) => /[a-z0-9]+@[a-z]+\.[a-z]{2,3}/.test(val) || 'Invalid email',
-              ]"
-              lazy-rules
+              :rules="[() => !Boolean(errors.error?.format().email?._errors.length)]"
+              :error-message="errors.error?.format().email?._errors[0]"
             />
             <q-input
               class="q-ma-md"
               filled
               v-model="address"
               label="Address"
-              lazy-rules
               type="text"
             />
             <q-input
@@ -57,11 +47,8 @@
               type="tel"
               mask="(###) ### - ####"
               hint="(###) ### - ####"
-              :rules="[
-                (val) => !!val || 'Phone is required',
-                (val) => val.length === 10 || 'Must be exactly 10 digits',
-              ]"
-              lazy-rules
+              :rules="[() => !Boolean(errors.error?.format().phone?._errors.length)]"
+              :error-message="errors.error?.format().phone?._errors[0]"
             />
             <q-select
               class="q-ma-md"
@@ -71,8 +58,8 @@
               emit-value
               label="User"
               filled
-              :rules="[(val) => !!val || 'User is required']"
-              lazy-rules
+              :rules="[() => !Boolean(errors.error?.format().userId?._errors.length)]"
+              :error-message="errors.error?.format().userId?._errors[0]"
             />
           </div>
           <div class="flex justify-center q-mt-md">
@@ -85,25 +72,64 @@
 </template>
 
 <script setup lang="ts">
-import { Notify, QForm, QSelectOption } from 'quasar';
+import { event, Notify, QForm, QSelectOption } from 'quasar';
 import { CustomerInput } from 'src/models/customer/customer-input.customer.model';
 import { User } from 'src/models/user/user.user.model';
 import { useUserStore } from 'src/stores/userStore';
-import { onMounted, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
+import { z } from 'zod';
 
 const userStore = useUserStore();
 
-const firstname = ref<string>('');
-const lastname = ref<string>('');
-const email = ref<string>('');
-const address = ref<string>('');
-const phone = ref<string>('');
-const userId = ref<number | null>(null);
-
+const formRef = ref<InstanceType<typeof QForm> | null>(null);
+const firstname = ref<string | null>(null);
+const lastname = ref<string | null>(null);
+const email = ref<string | null>(null);
+const address = ref<string | null>(null);
+const phone = ref<string | null>(null);
+const userId = ref<string | null>(null);
 const options = ref<QSelectOption[]>([]);
+
+const errors = computed(() => {
+  return customerSchema.safeParse({
+    firstname: firstname.value,
+    lastname: lastname.value,
+    email: email.value,
+    address: address.value,
+    phone: phone.value,
+    userId: userId.value,
+  });
+});
+
+
 const userList = ref<User[]>([]);
 
-const formRef = ref<QForm | null>(null);
+const customerSchema = z.object({
+  firstname: z
+    .string({ message: 'Firstname is required' })
+    .min(2, { message: 'Must be at least 2 characters' }),
+  lastname: z
+    .string({ message: 'Lastname is required' })
+    .min(2, { message: 'Must be at least 2 characters' }),
+  email: z
+    .string({ message: 'Email is required' })
+    .email({ message: 'Invalid email address' }),
+  address: z.string(),
+  phone: z
+    .string({ message: 'Phone is required' })
+    .min(10, { message: 'Must be exactly 10 digits' }),
+  userId: z
+    .string({ message: 'User is required' })
+    .min(1, { message: 'Must be user selected' }),
+});
+
+
+
+const validate = (): boolean => {
+  formRef.value?.validate();
+  console.log(errors.value);
+  return errors.value.success;
+};
 
 const clearInput = () => {
   firstname.value = '';
@@ -111,40 +137,43 @@ const clearInput = () => {
   email.value = '';
   address.value = '';
   phone.value = '';
-  userId.value = null;
+  userId.value = '';
 };
 
-const generateCustomer = async () => {
-  if (formRef.value && (await formRef.value.validate())) {
-    const customerInput: CustomerInput = new CustomerInput({
-      firstName: firstname.value,
-      lastName: lastname.value,
-      email: email.value,
-      address: address.value,
-      phone: phone.value,
-      userId: Number(userId.value),
-    });
-    console.log('input ', customerInput);
 
-    const result = await userStore.generateCustomer(customerInput);
-    if (result?.success) {
-      Notify.create({ message: 'Customer eklendi', color: 'primary', position: 'top' });
-      clearInput();
-    } else {
-      Notify.create({
-        message: result?.message ?? 'Hata',
-        color: 'warning',
-        position: 'top',
-      });
-    }
+const generateCustomer = async () => {
+  if (!validate()) {
+    Notify.create({
+      message: 'Gerekli Bilgileri eksiksiz doldurun.',
+      color: 'warning',
+      position: 'top',
+    });
+    return;
+  }
+
+  const customerInput: CustomerInput = new CustomerInput({
+    firstName: firstname.value!,
+    lastName: lastname.value!,
+    email: email.value!,
+    address: address.value,
+    phone: phone.value,
+    userId: Number(userId.value),
+  });
+
+  const result = await userStore.generateCustomer(customerInput);
+  if (result?.success) {
+    Notify.create({ message: 'Customer added', color: 'primary', position: 'top' });
+    formRef.value?.reset();
+    clearInput();
   } else {
     Notify.create({
-      message: 'Please fix the errors in the form.',
+      message: result?.message ?? 'Error',
       color: 'warning',
       position: 'top',
     });
   }
 };
+
 
 onMounted(async () => {
   userList.value = await userStore.getAllUser();

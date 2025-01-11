@@ -40,8 +40,8 @@ export const useAuthStore = defineStore('auth', {
         const result: LoginResult = await api.post('Auth/login', loginInput);
         const accessToken = result.data.accessToken;
         const refreshToken = result.data.refreshToken;
-        console.log("acc ",accessToken);
-        console.log("rcc ",refreshToken);
+        console.log("access ",accessToken);
+        console.log("refresh ",refreshToken);
         this.setAccessToken(accessToken);
         this.setRefreshToken(refreshToken);
         return result;

@@ -17,7 +17,7 @@ export default boot(async ({ store, router }) => {
       const newAccessToken = await authStore.refresh(refreshToken);
       console.log(newAccessToken);
     }
-  }, 6000);
+  }, 100000);
 
   if (authStore.accessToken && authStore.refreshToken) {
     router.push({
