@@ -2,7 +2,7 @@
   <div class="flex justify-center items-center q-pa-md" style="height: 100vh">
     <q-card class="my-card" style="width: 50%">
       <q-card-section>
-        <q-form ref="formRef"  class="q-gutter-md">
+        <q-form ref="formRef" @submit="generateCustomer" class="q-gutter-md">
           <div>
             <q-input
               class="q-ma-md"
@@ -75,7 +75,6 @@
             <q-btn
               label="Submit"
               type="submit"
-              @click="generateCustomer"
               color="primary"
             />
           </div>
@@ -143,22 +142,22 @@ const clearInput = () => {
 };
 
 
-const validate = async (): Promise<boolean> => {
-  await formRef.value?.validate();
-  console.log('errors ', errors.value);
-  return errors.value.success;
-};
+// const validate = async (): Promise<boolean> => {
+//   await formRef.value?.validate();
+//   console.log('errors ', errors.value);
+//   return errors.value.success;
+// };
 
 const generateCustomer = async () => {
-  const validationResponse = validate();
-  console.log('validationResponse', validationResponse);
-  if (!validate()) {
-    Notify.create({
-      message: 'Gerekli Bilgileri eksiksiz doldurun.',
-      color: 'warning',
-      position: 'top',
-    });
-  }
+  // const validationResponse = validate();
+  // console.log('validationResponse', validationResponse);
+  // if (!validate()) {
+  //   Notify.create({
+  //     message: 'Gerekli Bilgileri eksiksiz doldurun.',
+  //     color: 'warning',
+  //     position: 'top',
+  //   });
+  // }
 
 
   const customerInput: CustomerInput = new CustomerInput({
